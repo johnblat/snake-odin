@@ -73,6 +73,10 @@ debug_draw_input_keydowns :: proc() {
     }
 }
 
+debug_draw_input_keys_pressed :: proc() {
+    
+}
+
 
 // draw procedures
 
@@ -131,7 +135,7 @@ draw :: proc() {
         rl.DrawLine(0, y * CELL_RENDER_SIZE, WINDOW_SIZE, y * CELL_RENDER_SIZE, COLOR_GRID)
     }
 
-    debug_draw_input_keydowns()
-    
+    ///debug_draw_input_keydowns()
+
     rl.EndDrawing()
 }
