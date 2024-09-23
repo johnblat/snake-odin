@@ -5,7 +5,7 @@ import rl "vendor:raylib"
 /*************
 * CONSTANTS
 **************/
-GRID_SIZE             : i32 : 20
+GRID_SIZE             : i32 : 10
 NUM_CELLS             : i32 : GRID_SIZE * GRID_SIZE // 400
 CELL_RENDER_SIZE      : i32 :  32
 GRID_LINE_RENDER_SIZE : i32 : 2
@@ -29,5 +29,5 @@ snake_movement_direction: Direction = Direction.RIGHT
 
 food_cell : Cell = Cell{5, 5}
 
-frames_total_before_move         : i32 = 10
+frames_total_before_move         : i32 = 12
 frames_num_remaining_before_move : i32 = frames_total_before_move
