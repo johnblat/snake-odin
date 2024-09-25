@@ -3,6 +3,8 @@ package snake
 import "core:fmt"
 import "core:strings"
 import rl "vendor:raylib"
+import imgui "odin-imgui"
+import imgui_rl "imgui_impl_raylib"
 
 
 debug_draw_input_keydowns :: proc( x_offset, y_offset: i32) -> (x_end, y_end: i32) {
@@ -159,13 +161,34 @@ debug_draw_snake_movement_direction :: proc(x_offset, y_offset: i32) -> (x_end, 
 }
 
 
+draw_editor_ui :: proc() {
+    imgui.ShowDemoWindow(nil)
+    imgui.Render()
+    imgui_rl.render_draw_data(imgui.GetDrawData())
+}
+
 // draw procedures
 
 draw :: proc() {
     rl.BeginDrawing()
 
     // draw background color
-    rl.ClearBackground(COLOR_BG)
+    // rl.ClearBackground(COLOR_BG)
+
+    // draw checkered background
+    color1 : rl.Color = rl.Color{209/2, 113/2, 52/2, 255}
+    color2 : rl.Color = rl.Color{97/2, 40/2, 21/2, 255}
+    for x in 0..=GRID_SIZE {
+        for y in 0..=GRID_SIZE {
+            color : rl.Color
+            if (x + y) % 2 == 0 {
+                color = color1
+            } else {
+                color = color2
+            }
+            rl.DrawRectangle(x * CELL_RENDER_SIZE, y * CELL_RENDER_SIZE, CELL_RENDER_SIZE, CELL_RENDER_SIZE, color)
+        }
+    }
 
     // draw food
     rl.DrawRectangle(
@@ -212,12 +235,12 @@ draw :: proc() {
     rl.DrawRectangle(WINDOW_SIZE - CELL_RENDER_SIZE * BORDER_CELL_PADDING, 0, CELL_RENDER_SIZE * BORDER_CELL_PADDING, WINDOW_SIZE, COLOR_BORDER)
 
     // draw grid
-    for x in 0..=GRID_SIZE {
-        rl.DrawLine(x * CELL_RENDER_SIZE, 0, x * CELL_RENDER_SIZE, WINDOW_SIZE, COLOR_GRID)
-    }
-    for y in 0..=GRID_SIZE {
-        rl.DrawLine(0, y * CELL_RENDER_SIZE, WINDOW_SIZE, y * CELL_RENDER_SIZE, COLOR_GRID)
-    }
+    // for x in 0..=GRID_SIZE {
+    //     rl.DrawLine(x * CELL_RENDER_SIZE, 0, x * CELL_RENDER_SIZE, WINDOW_SIZE, COLOR_GRID)
+    // }
+    // for y in 0..=GRID_SIZE {
+    //     rl.DrawLine(0, y * CELL_RENDER_SIZE, WINDOW_SIZE, y * CELL_RENDER_SIZE, COLOR_GRID)
+    // }
 
     // draw debug ui
     // x :i32 = 10
@@ -229,6 +252,8 @@ draw :: proc() {
     // x, y = debug_draw_input_keydowns(x, y)
     // y += y_padding_between_elements
     // debug_draw_input_keys_pressed_array(x, y)
+
+    draw_editor_ui()
 
     // end
     rl.EndDrawing()

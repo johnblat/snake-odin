@@ -5,7 +5,7 @@ import rl "vendor:raylib"
 /*************
 * CONSTANTS
 **************/
-GRID_SIZE             : i32 : 10
+GRID_SIZE             : i32 : 20
 NUM_CELLS             : i32 : GRID_SIZE * GRID_SIZE // 400
 CELL_RENDER_SIZE      : i32 :  32
 GRID_LINE_RENDER_SIZE : i32 : 2
@@ -13,12 +13,12 @@ BORDER_CELL_PADDING   : i32 : 1 // how many cells to pad the border of the windo
 WINDOW_SIZE           : i32 : (GRID_SIZE) * CELL_RENDER_SIZE // 640 
 
 // colors
-COLOR_SNAKE_HEAD : rl.Color : rl.Color{0, 120, 255, 255}
-COLOR_SNAKE_TAIL : rl.Color : rl.Color{0, 46, 255, 255} 
-color_food       : rl.Color : rl.Color{216, 122, 27, 255}
+COLOR_SNAKE_HEAD : rl.Color : rl.Color{126, 121, 245, 255}
+COLOR_SNAKE_TAIL : rl.Color : rl.Color{105, 87, 243, 255} 
+color_food       : rl.Color : rl.Color{59, 178, 78, 255}
 COLOR_GRID       : rl.Color : rl.Color{60, 60, 60, 255}
 COLOR_BG         : rl.Color : rl.Color{0, 0, 0, 255}
-COLOR_BORDER     : rl.Color : COLOR_SNAKE_TAIL
+COLOR_BORDER     : rl.Color : rl.Color{19, 113, 53, 255}
 
 /*************
 * GLOBAL VARIABLES
