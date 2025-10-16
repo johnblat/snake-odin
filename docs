@@ -1,0 +1,24 @@
+The platform layer is resonsible for:
+- Window Management
+- Closing the application
+- Setting input state
+- Drawing graphics on screen
+
+
+API:
+
+// sets app to initial state
+// should be called once before game loop
+initialize()
+
+// sets the inputs that are used by the snake game
+// should be called once per frame
+set_inputs()
+
+// updates the game simulation one tick
+// should be called once per frame
+// returns:
+// - a list of draw commands that the platform will need to decide on how to draw
+// - whether or not the game is now requesting to close or not
+update() -> draw_commands, still_running
+
