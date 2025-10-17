@@ -4,7 +4,7 @@ This is an example of creating a native cross-platform repository using the plat
 
 I've implemented a basic snake game as a module that contains a few API functions:
 - intialize
-- set_view
+- set_view_size
 - set_inputs
 - update
 
