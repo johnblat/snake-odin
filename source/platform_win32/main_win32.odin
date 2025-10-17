@@ -2,6 +2,7 @@ package platform_win32
 
 import windows "core:sys/windows"
 import "core:mem"
+import "core:fmt"
 import game "../game"
 import "core:c"
 
@@ -16,42 +17,9 @@ State :: struct {
 
 state: State
 
-create_window :: proc(title: string, width, height: i32) -> windows.HWND {
-    class_name : cstring = "SnakeWindow"
-
-    wc: windows.WNDCLASSW
-    wc.style = windows.CS_OWNDC
-    wc.lpfnWndProc = proc "std" (hwnd: windows.HWND, msg: u32, wparam: windows.WPARAM, lparam: windows.LPARAM) -> windows.LRESULT {
-        switch msg {
-        case windows.WM_DESTROY:
-            state.running = false
-            return 0
-        case windows.WM_CLOSE:
-            state.running = false
-            return 0
-        }
-        return windows.DefWindowProcW(hwnd, msg, wparam, lparam)
-    }
-    wc.hInstance = windows.HANDLE(windows.GetModuleHandleA(nil))
-    // wc.lpszClassName = windows.LPCWSTR(class_name)
-    windows.RegisterClassW(&wc)
-
-    hwnd := windows.CreateWindowExW(
-        0,
-        class_name,
-        title,
-        windows.WS_OVERLAPPEDWINDOW | windows.WS_VISIBLE,
-        windows.CW_USEDEFAULT, windows.CW_USEDEFAULT,
-        width, height,
-        0, 0, wc.hInstance, nil,
-    )
-
-    return hwnd
-}
-
 process_input :: proc() -> (up, down, left, right, start: bool) {
     msg: windows.MSG
-    for windows.PeekMessageW(&msg, 0, 0, 0, windows.PM_REMOVE) {
+    for windows.PeekMessageW(&msg, nil, 0, 0, windows.PM_REMOVE) {
         if msg.message == windows.WM_QUIT {
             state.running = false
         }
@@ -59,16 +27,16 @@ process_input :: proc() -> (up, down, left, right, start: bool) {
         windows.DispatchMessageW(&msg)
     }
 
-    up = windows.GetAsyncKeyState(windows.VK_UP) & 0x8000 != 0
-    down = windows.GetAsyncKeyState(windows.VK_DOWN) & 0x8000 != 0
-    left = windows.GetAsyncKeyState(windows.VK_LEFT) & 0x8000 != 0
-    right = windows.GetAsyncKeyState(windows.VK_RIGHT) & 0x8000 != 0
-    start = windows.GetAsyncKeyState(windows.VK_RETURN) & 0x8000 != 0
+    up = u16(windows.GetAsyncKeyState(windows.VK_UP)) & u16(0x8000) != 0
+    down = u16(windows.GetAsyncKeyState(windows.VK_DOWN)) & u16(0x8000) != 0
+    left = u16(windows.GetAsyncKeyState(windows.VK_LEFT)) & u16(0x8000) != 0
+    right = u16(windows.GetAsyncKeyState(windows.VK_RIGHT)) & u16(0x8000) != 0
+    start = u16(windows.GetAsyncKeyState(windows.VK_RETURN)) & u16(0x8000) != 0
     return
 }
 
 render_frame :: proc() {
-    state.bitmap_info.bmiHeader.biSize = mem.size_of(windows.BITMAPINFOHEADER)
+    state.bitmap_info.bmiHeader.biSize = size_of(windows.BITMAPINFOHEADER)
     state.bitmap_info.bmiHeader.biWidth = state.width
     state.bitmap_info.bmiHeader.biHeight = -state.height // top-down
     state.bitmap_info.bmiHeader.biPlanes = 1
@@ -89,9 +57,41 @@ render_frame :: proc() {
 main :: proc() {
     state.width = game.WINDOW_SIZE
     state.height = game.WINDOW_SIZE
-    hwnd := create_window("snake", state.width, state.height)
-    state.hwnd = hwnd
-    state.hdc = windows.GetDC(hwnd)
+
+    class_name := windows.utf8_to_utf16("Snake Win32")
+    title_utf16 := windows.utf8_to_utf16("Snake Win32")
+
+    wc: windows.WNDCLASSW
+    wc.style = windows.CS_OWNDC
+    wc.lpfnWndProc = proc "std" (hwnd: windows.HWND, msg: u32, wparam: windows.WPARAM, lparam: windows.LPARAM) -> windows.LRESULT {
+        switch msg {
+        case windows.WM_DESTROY:
+            state.running = false
+            return 0
+        case windows.WM_CLOSE:
+            state.running = false
+            return 0
+        }
+        return windows.DefWindowProcW(hwnd, msg, wparam, lparam)
+    }
+    wc.hInstance = windows.HANDLE(windows.GetModuleHandleA(nil))
+    // wc.lpszClassName = windows.LPCWSTR(class_name)
+    windows.RegisterClassW(&wc)
+
+
+    state.hwnd = windows.CreateWindowExW(
+        0,
+        windows.LPCWSTR(&class_name[0]),
+        windows.LPCWSTR(&title_utf16[0]),
+        windows.WS_OVERLAPPEDWINDOW | windows.WS_VISIBLE,
+        windows.CW_USEDEFAULT, windows.CW_USEDEFAULT,
+        state.width, state.height,
+        nil, nil, wc.hInstance, nil,
+    )
+
+
+    state.hdc = windows.GetDC(state.hwnd)
+
     state.running = true
 
     // allocate 32-bit BGRA buffer
@@ -113,6 +113,10 @@ main :: proc() {
         windows.QueryPerformanceCounter(&start_time)
 
         up, down, left, right, start := process_input()
+        if start // just do something to close
+        {
+            state.running = false
+        }
         game.set_inputs(up, down, left, right, start)
 
         draw_commands, still_running := game.update()
@@ -174,6 +178,6 @@ main :: proc() {
         last_time = start_time
     }
 
-    windows.ReleaseDC(hwnd, state.hdc)
-    windows.DestroyWindow(hwnd)
+    windows.ReleaseDC(state.hwnd, state.hdc)
+    windows.DestroyWindow(state.hwnd)
 }

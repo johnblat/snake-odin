@@ -15,7 +15,7 @@ initialize()
 // should be called once per frame
 set_inputs()
 
-// updates the game simulation one tick
+// updates the game simulation state one tick
 // should be called once per frame
 // returns:
 // - a list of draw commands that the platform will need to decide on how to draw
