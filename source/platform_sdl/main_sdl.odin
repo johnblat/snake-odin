@@ -7,7 +7,6 @@ State :: struct
 {
 	window : ^sdl.Window,
 	renderer : ^sdl.Renderer,
-	req_close : bool,
 }
 
 state : State
@@ -29,7 +28,7 @@ main :: proc()
 
     frame_time_ms : u64 = (1000/60)
 
-	for !state.req_close
+	for true
 	{
 		frame_start_ticks_ms := sdl.GetTicks()
 
@@ -40,7 +39,6 @@ main :: proc()
 			{
 				case .WINDOW_CLOSE_REQUESTED:
 				{
-					state.req_close = true
 					return
 				}
 				case .KEY_DOWN:
@@ -49,7 +47,6 @@ main :: proc()
 					{
 						if event.key.scancode == .ESCAPE
 						{
-							state.req_close = true
 							return
 						}
 					}

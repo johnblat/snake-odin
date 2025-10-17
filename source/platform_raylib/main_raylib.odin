@@ -3,12 +3,6 @@ package platform_raylib
 import game "../game"
 import rl "vendor:raylib"
 
-State :: struct
-{
-	req_close : bool,
-}
-
-state : State
 
 main :: proc()
 {
@@ -20,7 +14,7 @@ main :: proc()
 
     game.initialize()
 
-	for !state.req_close
+	for true
 	{
 		if rl.WindowShouldClose()
 		{
