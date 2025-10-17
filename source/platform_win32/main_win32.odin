@@ -17,42 +17,6 @@ State :: struct {
 
 state: State
 
-process_input :: proc() -> (up, down, left, right, start: bool) {
-    msg: windows.MSG
-    for windows.PeekMessageW(&msg, nil, 0, 0, windows.PM_REMOVE) {
-        if msg.message == windows.WM_QUIT {
-            state.running = false
-        }
-        windows.TranslateMessage(&msg)
-        windows.DispatchMessageW(&msg)
-    }
-
-    up = u16(windows.GetAsyncKeyState(windows.VK_UP)) & u16(0x8000) != 0
-    down = u16(windows.GetAsyncKeyState(windows.VK_DOWN)) & u16(0x8000) != 0
-    left = u16(windows.GetAsyncKeyState(windows.VK_LEFT)) & u16(0x8000) != 0
-    right = u16(windows.GetAsyncKeyState(windows.VK_RIGHT)) & u16(0x8000) != 0
-    start = u16(windows.GetAsyncKeyState(windows.VK_RETURN)) & u16(0x8000) != 0
-    return
-}
-
-render_frame :: proc() {
-    state.bitmap_info.bmiHeader.biSize = size_of(windows.BITMAPINFOHEADER)
-    state.bitmap_info.bmiHeader.biWidth = state.width
-    state.bitmap_info.bmiHeader.biHeight = -state.height // top-down
-    state.bitmap_info.bmiHeader.biPlanes = 1
-    state.bitmap_info.bmiHeader.biBitCount = 32
-    state.bitmap_info.bmiHeader.biCompression = windows.BI_RGB
-
-    windows.StretchDIBits(
-        state.hdc,
-        0, 0, state.width, state.height,
-        0, 0, state.width, state.height,
-        raw_data(state.backbuffer),
-        &state.bitmap_info,
-        windows.DIB_RGB_COLORS,
-        windows.SRCCOPY,
-    )
-}
 
 main :: proc() {
     state.width = game.WINDOW_SIZE
@@ -75,7 +39,7 @@ main :: proc() {
         return windows.DefWindowProcW(hwnd, msg, wparam, lparam)
     }
     wc.hInstance = windows.HANDLE(windows.GetModuleHandleA(nil))
-    // wc.lpszClassName = windows.LPCWSTR(class_name)
+    wc.lpszClassName = windows.LPCWSTR(&class_name[0])
     windows.RegisterClassW(&wc)
 
 
@@ -85,7 +49,7 @@ main :: proc() {
         windows.LPCWSTR(&title_utf16[0]),
         windows.WS_OVERLAPPEDWINDOW | windows.WS_VISIBLE,
         windows.CW_USEDEFAULT, windows.CW_USEDEFAULT,
-        state.width, state.height,
+        state.width + 20, state.height + 20,
         nil, nil, wc.hInstance, nil,
     )
 
@@ -108,20 +72,41 @@ main :: proc() {
     last_time: windows.LARGE_INTEGER
     windows.QueryPerformanceCounter(&last_time)
 
-    for state.running {
+    for state.running 
+    {
         start_time: windows.LARGE_INTEGER
         windows.QueryPerformanceCounter(&start_time)
 
-        up, down, left, right, start := process_input()
+        
+        msg: windows.MSG
+        for windows.PeekMessageW(&msg, nil, 0, 0, windows.PM_REMOVE) 
+        {
+            if msg.message == windows.WM_QUIT 
+            {
+                state.running = false
+            }
+            windows.TranslateMessage(&msg)
+            windows.DispatchMessageW(&msg)
+        }
+
+        up, down, left, right, start : bool
+        up = u16(windows.GetAsyncKeyState(windows.VK_UP)) & u16(0x8000) != 0
+        down = u16(windows.GetAsyncKeyState(windows.VK_DOWN)) & u16(0x8000) != 0
+        left = u16(windows.GetAsyncKeyState(windows.VK_LEFT)) & u16(0x8000) != 0
+        right = u16(windows.GetAsyncKeyState(windows.VK_RIGHT)) & u16(0x8000) != 0
+        start = u16(windows.GetAsyncKeyState(windows.VK_RETURN)) & u16(0x8000) != 0
+        game.set_inputs(up, down, left, right, start)
+
         if start // just do something to close
         {
-            state.running = false
+            // state.running = false
+            // windows.PostMessageW(state.hwnd, windows.WM_CLOSE, 0, 0)
         }
-        game.set_inputs(up, down, left, right, start)
+
 
         draw_commands, still_running := game.update()
         if !still_running {
-            break
+            //
         }
 
         // Clear frame
@@ -161,7 +146,24 @@ main :: proc() {
             }
         }
 
-        render_frame()
+        {
+            state.bitmap_info.bmiHeader.biSize = size_of(windows.BITMAPINFOHEADER)
+            state.bitmap_info.bmiHeader.biWidth = state.width
+            state.bitmap_info.bmiHeader.biHeight = -state.height // top-down
+            state.bitmap_info.bmiHeader.biPlanes = 1
+            state.bitmap_info.bmiHeader.biBitCount = 32
+            state.bitmap_info.bmiHeader.biCompression = windows.BI_RGB
+
+            windows.StretchDIBits(
+                state.hdc,
+                0, 0, state.width, state.height,
+                0, 0, state.width, state.height,
+                raw_data(state.backbuffer),
+                &state.bitmap_info,
+                windows.DIB_RGB_COLORS,
+                windows.SRCCOPY,
+            )
+        }
 
         // frame timing
         end_time: windows.LARGE_INTEGER
